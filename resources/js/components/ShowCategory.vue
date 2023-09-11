@@ -11,73 +11,75 @@
             <h1><center>{{ post.section_title }}</center></h1>
             <iframe width="600" height="600" :src="`${post.iframe}`" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
         </div>
-        <div v-if="check_category_poll == 0">
-            <div v-if="poll_question_posts == ''" class="row">
-                <div class="col-8 col-8-scroll" ref="col8">
-                    <div class="p-0">
-                        <div class="col-12" v-for="(post, index) in posts" v-bind:index="index">
-                            <router-link v-if="post.icon_available_id == '1'" @click.native="Track(post.google_tag)" class="boton2" :style="{ background: post.color}" :to="`/content/show/${post.content_id}`"> 
-                                <i v-bind:class="post.icon"></i><br> <font class="title">{{ post.title }}</font>
-                            </router-link>
-                            <router-link v-else @click.native="Track(post.google_tag)" class="boton2 link" :style="{ background: post.color}" :to="`/content/show/${post.content_id}`"> 
+        <div v-else>
+            <div v-if="check_category_poll == 0">
+                <div v-if="poll_question_posts == ''" class="row">
+                    <div class="col-8 col-8-scroll" ref="col8">
+                        <div class="p-0">
+                            <div class="col-12" v-for="(post, index) in posts" v-bind:index="index">
+                                <router-link v-if="post.icon_available_id == '1'" @click.native="Track(post.google_tag)" class="boton2" :style="{ background: post.color}" :to="`/content/show/${post.content_id}`"> 
+                                    <i v-bind:class="post.icon"></i><br> <font class="title">{{ post.title }}</font>
+                                </router-link>
+                                <router-link v-else @click.native="Track(post.google_tag)" class="boton2 link" :style="{ background: post.color}" :to="`/content/show/${post.content_id}`"> 
+                                    <br><font class="title">{{ post.title }}</font>
+                                </router-link>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-4">
+                        <div class="d-flex flex-column align-items-center">
+                            <div class="circle" @click="scrollContent(-50)">
+                                <i class="fas fa-chevron-up"></i>
+                            </div>
+                            <div class="circle" @click="scrollContent(50)">
+                                <i class="fas fa-chevron-down"></i>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div v-if="poll_question_posts != ''" class="row">
+                    <div v-if="poll_quantity == 1">
+                        <form @submit.prevent="onSubmit" ref="createCollection" enctype="multipart/form-data">
+                            <div class="col-12" v-for="(post, index) in poll_question_posts" v-bind:index="index">
+                            
+                                <h2>{{ post.question }}</h2>
+                                <hr>
+                                <div class="form-group" v-if="post.answer_type_id == 1">
+                                    <h4>Selecciona la respuesta marcando en el circulo</h4>
+                                    <hr>
+                                    <label class="question_poll_yes_no" style="font-size: 20px;" for="yes">Si</label>   <input style="font-size: 30px !important;" type="radio" sty v-model="form.yes_no_answer[index]" id="yes_no_asnwer" value="Si" required>
+                                    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      
+                                    <label class="question_poll_yes_no" style="font-size: 20px;" for="no">No</label>    <input type="radio" v-model="form.yes_no_answer[index]" id="yes_no_asnwer" value="No" required>
+
+                                </div>
+                                <div class="form-group" v-if="post.answer_type_id == 2">
+                                    <h4>Escriba su respuesta</h4>
+                                    <hr>
+                                    <input
+                                        type="text" 
+                                        v-model="form.text_answer[index]" 
+                                        class="form-control"
+                                        placeholder="Ingresa la respuesta"
+                                        required
+                                    >
+                                </div>
+
+                                <button
+                                    type="submit" class="btn btn-success btn-icon-split">
+                                    <span class="icon text-white-50">
+                                        <i class="fas fa-check"></i>
+                                    </span>
+                                    <span class="text">Guardar</span>
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                    <div v-if="poll_quantity > 1">
+                        <div class="col-md-12" v-for="(post, index) in polls" v-bind:index="index">
+                            <router-link  class="pollboton link" :style="{ background: post.color}" :to="`/poll/show/${post.poll_id}`"> 
                                 <br><font class="title">{{ post.title }}</font>
                             </router-link>
                         </div>
-                    </div>
-                </div>
-                <div class="col-4">
-                    <div class="d-flex flex-column align-items-center">
-                        <div class="circle" @click="scrollContent(-50)">
-                            <i class="fas fa-chevron-up"></i>
-                        </div>
-                        <div class="circle" @click="scrollContent(50)">
-                            <i class="fas fa-chevron-down"></i>
-                        </div>
-                    </div>
-                </div>
-            </div>
-            <div v-if="poll_question_posts != ''" class="row">
-                <div v-if="poll_quantity == 1">
-                    <form @submit.prevent="onSubmit" ref="createCollection" enctype="multipart/form-data">
-                        <div class="col-12" v-for="(post, index) in poll_question_posts" v-bind:index="index">
-                        
-                            <h2>{{ post.question }}</h2>
-                            <hr>
-                            <div class="form-group" v-if="post.answer_type_id == 1">
-                                <h4>Selecciona la respuesta marcando en el circulo</h4>
-                                <hr>
-                                <label class="question_poll_yes_no" style="font-size: 20px;" for="yes">Si</label>   <input style="font-size: 30px !important;" type="radio" sty v-model="form.yes_no_answer[index]" id="yes_no_asnwer" value="Si" required>
-                                &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;      
-                                <label class="question_poll_yes_no" style="font-size: 20px;" for="no">No</label>    <input type="radio" v-model="form.yes_no_answer[index]" id="yes_no_asnwer" value="No" required>
-
-                            </div>
-                            <div class="form-group" v-if="post.answer_type_id == 2">
-                                <h4>Escriba su respuesta</h4>
-                                <hr>
-                                <input
-                                    type="text" 
-                                    v-model="form.text_answer[index]" 
-                                    class="form-control"
-                                    placeholder="Ingresa la respuesta"
-                                    required
-                                >
-                            </div>
-
-                            <button
-                                type="submit" class="btn btn-success btn-icon-split">
-                                <span class="icon text-white-50">
-                                    <i class="fas fa-check"></i>
-                                </span>
-                                <span class="text">Guardar</span>
-                            </button>
-                        </div>
-                    </form>
-                </div>
-                <div v-if="poll_quantity > 1">
-                    <div class="col-md-12" v-for="(post, index) in polls" v-bind:index="index">
-                        <router-link  class="pollboton link" :style="{ background: post.color}" :to="`/poll/show/${post.poll_id}`"> 
-                            <br><font class="title">{{ post.title }}</font>
-                        </router-link>
                     </div>
                 </div>
             </div>
@@ -87,16 +89,35 @@
 <script>
     export default {
         created() {
+            this.getRegion();
+            this.getCommune();
             this.checkContentPoll();
             this.getPollQuestions();
             this.getPollQuantity();
             this.getPost();
             this.getPosts();
-            this.catchUser();
             this.checkDate();
             this.getPolls();
         },
         methods: {
+            async getRegion() {
+                try {
+                    const response = await axios.post('/api/region/find');
+
+                    this.region = response.data.data.region_id;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
+            async getCommune() {
+                try {
+                    const response = await axios.post('/api/commune/find');
+
+                    this.commune = response.data.data.commune_id;
+                } catch (error) {
+                    console.log(error);
+                }
+            },
             scrollContent(offset) {
                 const col8 = this.$refs.col8;
                 col8.scrollTop += offset;
@@ -227,19 +248,28 @@
                     this.loading = false;
                 });
             },
-            getPosts() {
-                this.loading = true;
+            async getPosts() {
+                try {
+                    await this.getRegion(); // Espera a que se complete getRegion()
 
-                axios.get('/api/content/show/'+ this.$route.params.id)
-                .then(response => {
-                    this.posts = response.data.data;
-                })
-                .catch(function (error) {
+                    this.loading = true;
+
+                    let formData = new FormData();
+                    formData.append('category_id',this.$route.params.id);
+                    formData.append('region', this.region);
+                    formData.append('commune', this.commune);
+
+                    if (this.region == null && this.commune == null) {
+                        this.posts = '';
+                    } else {
+                        const response = await axios.post('/api/content/show', formData);
+                        this.posts = response.data.data;
+                    }
+                } catch (error) {
                     console.log(error);
-                })
-                .finally(() => {
+                } finally {
                     this.loading = false;
-                });
+                }
             }
         },
         data: function() {

@@ -4,7 +4,7 @@
         <div class="container-fluid">
             <h1 class="h3 mb-2 text-gray-800">
                 Categorias
-                <router-link to="/category/create" class="btn btn-success btn-icon-split">
+                <router-link to="/category/create" class="btn btn-success btn-icon-split" v-if="rols_permissions[12]">
                     <span class="icon text-white-50">
                       <i class="fas fa-check"></i>
                     </span>
@@ -59,7 +59,7 @@
                             </center>
                         </div>
                         <div v-else>
-                            <div v-if="rowsQuantity > 0">
+                            <div v-if="rowsQuantity > 0 && rols_permissions[11]">
                                 <table v-if="total > 0" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
@@ -88,16 +88,16 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <router-link :to="`/category/edit/${post.category_id}`"  class="btn btn-primary btn-circle btn-sm">
+                                                <router-link v-if="rols_permissions[13]" :to="`/category/edit/${post.category_id}`"  class="btn btn-primary btn-circle btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </router-link>
-                                                <button v-on:click="deletePost(post.category_id, index)" class="btn btn-danger btn-circle btn-sm">
+                                                <button v-if="rols_permissions[14]" v-on:click="deletePost(post.category_id, index)" class="btn btn-danger btn-circle btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                                <button v-if="index != (rowsQuantity-1)" v-on:click="movePost(post.category_id, index+1, post.section_id)" class="btn btn-success btn-circle btn-sm">
+                                                <button v-if="index != (rowsQuantity-1) && rols_permissions[35]" v-on:click="movePost(post.category_id, index+1, post.section_id)" class="btn btn-success btn-circle btn-sm">
                                                     <i class="fas fa-arrow-down"></i>
                                                 </button>
-                                                <button v-if="index != 0" v-on:click="movePost(post.category_id, index-1, post.section_id)" class="btn btn-success btn-circle btn-sm">
+                                                <button v-if="index != 0 && rols_permissions[35]" v-on:click="movePost(post.category_id, index-1, post.section_id)" class="btn btn-success btn-circle btn-sm">
                                                     <i class="fas fa-arrow-up"></i>
                                                 </button>
                                             </td>
@@ -148,11 +148,22 @@
 
     export default {
         created() {
-            this.getRol();
+            this.getRols();
             this.storeAudit();
             this.getSectionList();
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             getSectionList() {
                 axios.get('/api/section/list?api_token='+App.apiToken)
                 .then(response => {
@@ -224,7 +235,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Category');
+                formData.append('page', 'Categorias');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -232,12 +243,6 @@
                 })
                 .catch(function (error) {
                     console.log(error);
-                });
-            },
-            getRol() {
-                axios.get('/api/user?api_token='+App.apiToken)
-                .then(response => {
-                    this.rol_id = response.data.data.rol_id;
                 });
             },
             deletePost(id, index) {
@@ -301,6 +306,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 color: '#0A2787',
                 loading: false,
                 form: {

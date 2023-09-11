@@ -1,11 +1,13 @@
 <template>
     <div class="container pt-32">
         <div v-if="poll_question_posts == ''" class="row">
+            <h1><center>{{ this.post.title }}</center></h1>
+            <hr>
+                
+            <a :href="`whatsapp://send?text=${encodeURIComponent(whatsapp_description)}`" style="whatsapp_share_button" data-action="share/whatsapp/share"> <strong>Compartir por Whatsapp</strong> <i class="fab fa-whatsapp"></i></a>
+                
 		    <div class="col-12" v-if="this.post.type_id == 1 || this.post.type_id == 2 || this.post.type_id == 4 || this.post.type_id == 5">
-                <h1><center>{{ this.post.title }}</center></h1>
-                <hr>
 
-                <a :href="`whatsapp://send?text=${encodeURIComponent(whatsapp_description)}`" style="whatsapp_share_button" data-action="share/whatsapp/share"> <strong>Compartir por Whatsapp</strong> <i class="fab fa-whatsapp"></i></a>
                 <div v-if="url !== null">
                     <center>
                         <img v-bind:src="image_url">
@@ -45,7 +47,7 @@
                 <hr>	
                 <h3>{{ this.post.description }}</h3>	    
             </div>
-            <div class="col-12" v-if="this.post.type_id == 3" v-html="this.post.description">	    
+            <div class="col-12 pt-10" v-if="this.post.type_id == 3" v-html="this.post.description">	    
             </div>
         </div>
         <div v-if="poll_question_posts != ''" class="row">
@@ -109,7 +111,6 @@
             this.getPollQuantity();
             this.getPolls();
             this.getPost();
-            this.catchUser();
         },
         components: {
             pdf
@@ -214,7 +215,12 @@
                     this.post = response.data.data;
                     this.url = this.post.src;
                     this.image_url = '/public/files/'+this.post.image;
-                    this.pdf_url = window.appUrl + '/public/files/'+this.post.pdf;
+
+                    var fullUrl = window.location.href;
+                    var splitted_url = fullUrl.split('/');
+                    var new_url = splitted_url[0] + '//' + splitted_url[2];
+
+                    this.pdf_url = new_url + '/public/files/'+this.post.pdf;
                     this.videoID = this.post.video_id;
                     
                     if(this.post.whatsapp_description == null || this.post.whatsapp_description == '') {

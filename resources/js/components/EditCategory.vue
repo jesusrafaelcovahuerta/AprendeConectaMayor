@@ -17,7 +17,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" v-if="rols_permissions[13]">
                     <div class="table-responsive">
                         <div v-if="loading">
                             <center>
@@ -248,6 +248,7 @@
             "v-input-colorpicker": InputColorPicker
         },
         created() {
+            this.getRols();
             this.getPost();
             this.getRegions();
             this.getCommunes();
@@ -258,6 +259,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 errors: [],
                 color: "#0f4c81",
                 loading: false,
@@ -291,6 +293,17 @@
             }
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             isSelectedRegion(regionId) {
                 return this.stored_regions.some(item => item.region_id === regionId);
             },
@@ -377,6 +390,14 @@
                     this.$set(this.form, 'position', this.post.position);
                     this.$set(this.form, 'icon_type_id', this.post.icon_type_id);
                     this.$set(this.form, 'iframe', this.post.iframe);
+
+                    if (this.post.iframe != null && this.post.iframe != '') {
+                        this.$set(this.form, 'iframe_question_id', 1);
+                    } else {
+                        this.$set(this.form, 'iframe_question_id', 2);
+                    }
+
+
                     this.$set(this.form, 'subtitle', this.post.subtitle);
                     this.$set(this.form, 'link_question_id', this.post.link_question_id);
                     this.$set(this.form, 'icon_available_id', this.post.icon_available_id);
@@ -432,7 +453,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'CreateCategory');
+                formData.append('page', 'Editar Categoría - Id de la Categoría: '+this.$route.params.id);
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -493,6 +514,7 @@
                     formData.append('position', this.form.position);
                     formData.append('icon_type_id', this.form.icon_type_id);
                     formData.append('iframe', this.form.iframe);
+                    formData.append('iframe_question_id', this.form.iframe_question_id);
                     formData.append('subtitle', this.form.subtitle);
                     formData.append('link_question_id', this.form.link_question_id);
                     formData.append('icon_available_id', this.form.icon_available_id);
@@ -512,6 +534,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Categoría Actualizada - Id de la Categoría: '+this.$route.params.id);
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                        
                         this.loading = false;
                         this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
                         this.$router.push('/category');

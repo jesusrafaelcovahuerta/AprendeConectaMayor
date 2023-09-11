@@ -159,7 +159,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Audit');
+                formData.append('page', 'Resultado de las Métricas');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {

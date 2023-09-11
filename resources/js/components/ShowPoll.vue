@@ -41,7 +41,6 @@
     export default {
         created() {
             this.getPosts();
-            this.catchUser();
             this.getPollQuestions();
             this.checkDate();
         },

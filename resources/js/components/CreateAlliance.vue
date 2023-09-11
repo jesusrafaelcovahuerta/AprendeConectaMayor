@@ -17,7 +17,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" v-if="rols_permissions[2]">
                     <div class="table-responsive">
                         <div v-if="loading">
                             <center>
@@ -142,10 +142,12 @@
             ClipLoader
         },
         created() {
+            this.getRols();
             this.storeAudit();
         },
         data: function() {
             return {
+                rols_permissions: {},
                 errors: [],
                 color: '#0A2787',
                 loading: false,
@@ -161,9 +163,20 @@
             }
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'CreateAlliance');
+                formData.append('page', 'Crear Alianza');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -208,6 +221,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Alianza Creada');
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+
                         this.loading = false;
                         this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
                         this.$router.push('/alliance');

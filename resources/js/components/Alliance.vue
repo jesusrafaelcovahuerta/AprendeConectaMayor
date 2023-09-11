@@ -4,7 +4,7 @@
         <div class="container-fluid">
             <h1 class="h3 mb-2 text-gray-800">
                 Alianzas 
-                <router-link to="/alliance/create" class="btn btn-success btn-icon-split">
+                <router-link to="/alliance/create" v-if="rols_permissions[2]" class="btn btn-success btn-icon-split">
                     <span class="icon text-white-50">
                       <i class="fas fa-check"></i>
                     </span>
@@ -66,7 +66,7 @@
                             </center>
                         </div>
                         <div v-else>
-                            <div v-if="rowsQuantity > 0">
+                            <div v-if="rowsQuantity > 0 && rols_permissions[1]">
                                 <table v-if="total > 0" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
@@ -99,13 +99,13 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <router-link :to="`/alliance/edit/${post.rut}`"  class="btn btn-primary btn-circle btn-sm">
+                                                <router-link :to="`/alliance/edit/${post.rut}`" v-if="rols_permissions[4]"  class="btn btn-primary btn-circle btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </router-link>
-                                                <button v-if="post.status == 1" v-on:click="deletePost(post.rut, index)" class="btn btn-danger btn-circle btn-sm">
+                                                <button v-if="post.status == 1 && rols_permissions[3]" v-on:click="deletePost(post.rut, index)" class="btn btn-danger btn-circle btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                                <button v-if="post.status == 0" v-on:click="activatePost(post.rut, index)" class="btn btn-success btn-circle btn-sm">
+                                                <button v-if="post.status == 0 && rols_permissions[5]" v-on:click="activatePost(post.rut, index)" class="btn btn-success btn-circle btn-sm">
                                                     <i class="fas fa-check"></i>
                                                 </button>
                                             </td>
@@ -157,11 +157,23 @@
 
     export default {
         created() {
+            this.getRols();
             this.getPosts();
             this.getRol();
             this.storeAudit();
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             onSubmit() {
                 this.loading = true; //the loading begin
                 if(this.form.rut == '') {
@@ -299,7 +311,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Alliance');
+                formData.append('page', 'Alianzas');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -316,6 +328,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 color: '#0A2787',
                 loading: false,
                 form: {

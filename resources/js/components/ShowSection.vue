@@ -12,50 +12,51 @@
                 <h1><center>{{ post.section_title }}</center></h1>
                 <iframe width="600" height="600" :src="`${post.iframe}`" title="" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
             </div>
-
-            <div v-if="check_category_poll == 0">
-                <div v-if="poll_question_posts == ''" class="row">
-                    <div class="col-8 col-8-scroll" ref="col8">
-                        <div class="p-0">
-                            <div class="col-12" v-for="(post, index) in posts" v-bind:index="index">
-                                <div v-if="post.link_question_id == 1">
-                                    <button class="boton2" v-if="post.icon_available_id == 2" :style="{ background: post.color}" v-on:click="goWeb(post.url,post.google_tag)" >
-                                        <font class="title">{{ post.title }}</font>
-                                    </button>
-                                    <button class="boton2" v-else :style="{ background: post.color}" v-on:click="goWeb(post.url,post.google_tag)" >
-                                        <i v-bind:class="post.icon"></i><br><font class="title">{{ post.title }}</font>
-                                    </button>
-                                </div>
-                                <div v-else>
-                                    <div v-if="post.icon_available_id == 2">
-                                        <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 0"  class="boton2 link" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
-                                            <br><font class="title">{{ post.title }}</font>
-                                        </router-link>
-
-                                        <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 1"  class="botonhighlight link" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
-                                            <br><font class="title">{{ post.title }}</font>
-                                        </router-link>
+            <div v-else>
+                <div v-if="check_category_poll == 0">
+                    <div v-if="poll_question_posts == ''" class="row">
+                        <div class="col-8 col-8-scroll" ref="col8">
+                            <div class="p-0">
+                                <div class="col-12" v-for="(post, index) in posts" v-bind:index="index">
+                                    <div v-if="post.link_question_id == 1">
+                                        <button class="boton2" v-if="post.icon_available_id == 2" :style="{ background: post.color}" v-on:click="goWeb(post.url,post.google_tag)" >
+                                            <font class="title">{{ post.title }}</font>
+                                        </button>
+                                        <button class="boton2" v-else :style="{ background: post.color}" v-on:click="goWeb(post.url,post.google_tag)" >
+                                            <i v-bind:class="post.icon"></i><br><font class="title">{{ post.title }}</font>
+                                        </button>
                                     </div>
                                     <div v-else>
-                                        <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 0"  class="boton2" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
-                                            <i v-bind:class="post.icon"></i><br><font class="title">{{ post.title }}</font>
-                                        </router-link>
+                                        <div v-if="post.icon_available_id == 2">
+                                            <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 0"  class="boton2 link" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
+                                                <br><font class="title">{{ post.title }}</font>
+                                            </router-link>
 
-                                        <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 1"  class="botonhighlight" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
-                                            <i v-bind:class="post.icon"></i><br> <font class="title">{{ post.title }}</font>
-                                        </router-link>
+                                            <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 1"  class="botonhighlight link" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
+                                                <br><font class="title">{{ post.title }}</font>
+                                            </router-link>
+                                        </div>
+                                        <div v-else>
+                                            <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 0"  class="boton2" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
+                                                <i v-bind:class="post.icon"></i><br><font class="title">{{ post.title }}</font>
+                                            </router-link>
+
+                                            <router-link @click.native="Track(post.google_tag)" v-if="post.highlight_id == 1"  class="botonhighlight" :style="{ background: post.color}" :to="`/category/show/${post.category_id}`"> 
+                                                <i v-bind:class="post.icon"></i><br> <font class="title">{{ post.title }}</font>
+                                            </router-link>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                    <div class="col-4">
-                        <div class="d-flex flex-column align-items-center">
-                            <div class="circle" @click="scrollContent(-50)">
-                                <i class="fas fa-chevron-up"></i>
-                            </div>
-                            <div class="circle" @click="scrollContent(50)">
-                                <i class="fas fa-chevron-down"></i>
+                        <div class="col-4">
+                            <div class="d-flex flex-column align-items-center">
+                                <div class="circle" @click="scrollContent(-50)">
+                                    <i class="fas fa-chevron-up"></i>
+                                </div>
+                                <div class="circle" @click="scrollContent(50)">
+                                    <i class="fas fa-chevron-down"></i>
+                                </div>
                             </div>
                         </div>
                     </div>

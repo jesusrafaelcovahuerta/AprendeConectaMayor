@@ -46,7 +46,7 @@
                                 </router-link>
                             </div>
                             <div v-else>
-                                <button class="boton2" :style="{ background: post.color}" v-on:click="openApp(post.open_app_uri_url, post.google_tag, post.open_app_desktop_url, post.open_app_not_installed)" >
+                                <button class="boton2 app" :style="{ background: post.color}" v-on:click="openApp(post.open_app_uri_url, post.google_tag, post.open_app_desktop_url, post.open_app_not_installed)" >
                                     <i v-bind:class="post.icon"></i><br><font class="title">{{ post.section_title }}</font> 
                                 </button>
                             </div>
@@ -68,7 +68,7 @@
                                 </router-link>
                             </div>
                             <div v-else>
-                                <button class="boton2" :style="{ background: post.color}" v-on:click="openApp(post.open_app_uri_url, post.google_tag, post.open_app_desktop_url, post.open_app_not_installed)" >
+                                <button class="boton2 app" :style="{ background: post.color}" v-on:click="openApp(post.open_app_uri_url, post.google_tag, post.open_app_desktop_url, post.open_app_not_installed)" >
                                     <font class="title">{{ post.section_title }}</font> 
                                 </button>
                             </div>
@@ -160,7 +160,7 @@
                     } else {
                         window.location.href = uri_url;
                         setTimeout(function(){
-                            if(confirm('No tienes instalado el aplicativo ¿Quieres instalarlo?')){
+                            if(confirm('No tienes instalado la App o falta una actualización. ¿Deseas ir a Google Play?')){
                                 window.location.href = open_app_not_installed;
                             }
                         }, 300);

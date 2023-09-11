@@ -17,7 +17,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" v-if="rols_permissions[10]">
                     <div class="table-responsive">
                         <div v-if="loading">
                             <center>
@@ -308,6 +308,7 @@
             "v-input-colorpicker": InputColorPicker
         },
         created() {
+            this.getRols();
             this.getPost();
             this.storeAudit();
             this.getRegions();
@@ -315,6 +316,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 errors: [],
                 region_posts: [],
                 commune_posts: [],
@@ -352,6 +354,17 @@
             }
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             isSelectedRegion(regionId) {
                 return this.stored_regions.some(item => item.region_id === regionId);
             },
@@ -396,7 +409,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'CreateSection');
+                formData.append('page', 'Editar Sección - Id de la Sección: '+this.$route.params.id);
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -533,6 +546,7 @@
                     formData.append('url', this.form.url);
                     formData.append('video_id', this.form.video_id);
                     formData.append('subtitle', this.form.subtitle);
+                    formData.append('iframe_question_id', this.form.iframe_question_id);
                     formData.append('iframe', this.form.iframe);
                     formData.append('google_tag', this.form.google_tag);
                     formData.append('region_id', this.form.region_id);
@@ -569,6 +583,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Sección Actualizada - Id de la Sección: '+currentObj.$route.params.id);
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+
                         this.loading = false;
                         this.$awn.success("El registro ha sido actualizado", {labels: {success: "Éxito"}});
                         this.$router.push('/section');

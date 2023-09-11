@@ -337,6 +337,7 @@ class SectionController extends ApiResponseController
         $section = Section::find($id);
         $section->section_subtitle = $request->subtitle;
         $section->section_title = $request->title;
+
         if($request->iframe_question_id == 1) {
             $section->iframe = $request->iframe;
         } else {

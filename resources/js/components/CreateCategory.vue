@@ -17,7 +17,7 @@
                         </div>
                     </div>
                 </div>
-                <div class="card-body">
+                <div class="card-body" v-if="rols_permissions[12]">
                     <div class="table-responsive">
                         <div v-if="loading">
                             <center>
@@ -248,6 +248,7 @@
             "v-input-colorpicker": InputColorPicker
         },
         created() {
+            this.getRols();
             this.getRegions();
             this.getCommunes();
             this.getAlliaceList();
@@ -257,6 +258,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 errors: [],
                 color: "#0f4c81",
                 loading: false,
@@ -288,6 +290,17 @@
             }
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             getRegions() {
                 this.loading = true;
 
@@ -356,7 +369,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'CreateCategory');
+                formData.append('page', 'Crear Categoría');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -436,6 +449,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Categoría Creada');
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+                        
                         this.loading = false;
                         this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
                         this.$router.push('/category');
@@ -451,6 +475,9 @@
                     }
                     if (this.form.section_id == null) {
                         this.errors.push('La sección es obligatoria.');
+                    }
+                    if (this.form.georeferencing_type_id == 1 && this.form.region_id == null) {
+                        this.errors.push('La región es obligatoria.');
                     }
                     if (this.form.color == '') {
                         this.errors.push('El color es obligatorio.');

@@ -72,7 +72,7 @@
                             </center>
                         </div>
                         <div v-else>
-                            <div v-if="rowsQuantity > 0">
+                            <div v-if="rowsQuantity > 0 && rols_permissions[15]">
                                 <table v-if="total > 0" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
@@ -108,25 +108,25 @@
                                                 </span>
                                             </td>
                                             <td>
-                                                <router-link v-if="post.status == 1" :to="`/content/edit/${post.content_id}`"  class="btn btn-primary btn-circle btn-sm">
+                                                <router-link v-if="post.status == 1 && rols_permissions[17]" :to="`/content/edit/${post.content_id}`"  class="btn btn-primary btn-circle btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </router-link>
-                                                <router-link v-if="post.status == 2 && rol_id == 1" :to="`/content/edit/${post.content_id}`"  class="btn btn-primary btn-circle btn-sm">
+                                                <router-link v-if="post.status == 2" :to="`/content/edit/${post.content_id}`"  class="btn btn-primary btn-circle btn-sm">
                                                     <i class="fas fa-eye"></i>
                                                 </router-link>
-                                                <button v-if="post.status == 1" v-on:click="stopPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
+                                                <button v-if="post.status == 1 && rols_permissions[37]" v-on:click="stopPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
                                                     <i class="fas fa-pause"></i>
                                                 </button>
-                                                <button v-if="post.status == 2 && (rol_id == 1 || rol_id == 3)" v-on:click="playPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
+                                                <button v-if="post.status == 2 && rols_permissions[38]" v-on:click="playPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
                                                     <i class="fas fa-play"></i>
                                                 </button>
-                                                <button v-if="post.status == 1" v-on:click="deletePost(post.content_id, index)" class="btn btn-danger btn-circle btn-sm">
+                                                <button v-if="post.status == 1 && rols_permissions[18]" v-on:click="deletePost(post.content_id, index)" class="btn btn-danger btn-circle btn-sm">
                                                     <i class="fas fa-trash"></i>
                                                 </button>
-                                                <button v-if="index != (rowsQuantity-1)" v-on:click="movePost(post.content_id, index+1, post.category_id)" class="btn btn-success btn-circle btn-sm">
+                                                <button v-if="index != (rowsQuantity-1) && rols_permissions[36]" v-on:click="movePost(post.content_id, index+1, post.category_id)" class="btn btn-success btn-circle btn-sm">
                                                     <i class="fas fa-arrow-down"></i>
                                                 </button>
-                                                <button v-if="index != 0" v-on:click="movePost(post.content_id, index-1, post.category_id)" class="btn btn-success btn-circle btn-sm">
+                                                <button v-if="index != 0 && rols_permissions[36]" v-on:click="movePost(post.content_id, index-1, post.category_id)" class="btn btn-success btn-circle btn-sm">
                                                     <i class="fas fa-arrow-up"></i>
                                                 </button>
                                             </td>
@@ -178,11 +178,22 @@
 
     export default {
         created() {
-            this.getRol();
+            this.getRols();
             this.getAlliaceList();
             this.getSectionList();
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
             movePost(id, index, category_id) {
                 this.loading = true;
                 axios.get('/api/content/move/'+id+'/'+index+'/'+category_id+'?api_token='+App.apiToken).then(response => {
@@ -280,7 +291,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Content');
+                formData.append('page', 'Contenidos');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -296,12 +307,6 @@
                 } else {
                     return '';
                 }
-            },
-            getRol() {
-                axios.get('/api/user/rol?api_token='+App.apiToken)
-                .then(response => {
-                    this.rol_id = response.data.data.rol_id;
-                });
             },
             deletePost(id, index) {
                 if(confirm("¿Realmente usted quiere borrar el registro?")) {
@@ -418,6 +423,7 @@
         },
         data: function() {
             return {
+                rols_permissions: {},
                 color: '#0A2787',
                 loading: false,
                 alliance_posts: [],

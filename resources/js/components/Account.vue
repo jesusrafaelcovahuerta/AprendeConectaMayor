@@ -27,7 +27,7 @@
         methods: {
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Account');
+                formData.append('page', 'Inicio del Panel de Control');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {

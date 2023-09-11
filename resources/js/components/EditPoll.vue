@@ -217,7 +217,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'CreatePoll');
+                formData.append('page', 'Editar Encuesta - Id de la Encuesta: '+this.$route.params.id);
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -279,6 +279,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Encuesta Actualizada - Id de la Encuesta: '+this.$route.params.id);
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+
                         this.loading = false;
                         this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
                         this.$router.push('/poll');

@@ -8,6 +8,8 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller\api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use App\ContentRegion;
+use App\ContentCommune;
 
 class ContentController extends ApiResponseController
 {
@@ -186,7 +188,62 @@ class ContentController extends ApiResponseController
                     $request->pdf,
                     $pdfName
                 );
-            }            
+            }          
+            
+            if($request->georeferencing_type_id == 1) {
+                if ($request->region_id != 1000) {
+                    $region_data = explode(',', $request->region_id);
+    
+                    for ($i=0; $i < count($region_data); $i++) { 
+                        $content_region = new ContentRegion();
+                        $content_region->content_id = $content->content_id;
+                        $content_region->region_id = trim($region_data[$i]);
+                        $content_region->save();
+                    }
+        
+                    if ($request->commune_id != 'null') {
+                        $commune_data = explode(',', $request->commune_id);
+        
+                        for ($i=0; $i < count($commune_data); $i++) { 
+                            $content_commune = new ContentCommune();
+                            $content_commune->content_id = $content->content_id;
+                            $content_commune->commune_id = trim($commune_data[$i]);
+                            $content_commune->save();
+                        }
+                    } else {
+                        $region_data = explode(',', $request->region_id);
+        
+                        for ($i=0; $i < count($region_data); $i++) { 
+                            $communes = Commune::where('region_id', trim($region_data[$i]))->get();
+        
+                            foreach ($communes as $commune) {
+                                $content_commune = new ContentCommune();
+                                $content_commune->content_id = $content->content_id;
+                                $content_commune->commune_id = $commune->commune_id;
+                                $content_commune->save();
+                            }
+                        }
+                    }
+                } else {
+                    $regions = Region::all();
+    
+                    foreach ($regions as $region) {
+                        $content_region = new ContentRegion();
+                        $content_region->content_id = $content->content_id;
+                        $content_region->region_id = $region->region_id;
+                        $content_region->save();
+                    }
+    
+                    $communes = Commune::all();
+    
+                    foreach ($communes as $commune) {
+                        $content_commune = new ContentCommune();
+                        $content_commune->content_id = $content->content_id;
+                        $content_commune->commune_id = $commune->commune_id;
+                        $content_commune->save();
+                    }
+                }
+            }
         }
 
         return $this->successResponse($content);
@@ -214,7 +271,7 @@ class ContentController extends ApiResponseController
      * @return \Illuminate\Http\Response
      */
     public function update(Request $request, $id)
-    {
+    {  
         $fileName = $request->icon;
 
         if($request->pdf != 'undefined') { 
@@ -282,6 +339,75 @@ class ContentController extends ApiResponseController
                     $pdfName
                 );
             }  
+
+            if($request->georeferencing_type_id == 1) {
+                $content_regions = ContentRegion::where('content_id', $id)->get();
+
+                foreach ($content_regions as $content_region) {
+                    $content_region_detail = ContentRegion::find($content_region->content_region_id);
+                    $content_region_detail->delete();
+                }
+
+                $content_communes = ContentCommune::where('content_id', $id)->get();
+
+                foreach ($content_communes as $content_commune) {
+                    $content_commune_detail = ContentCommune::find($content_commune->content_commune_id);
+                    $content_commune_detail->delete();
+                }
+
+                if ($request->region_id != 1000) {
+                    $region_data = explode(',', $request->region_id);
+    
+                    for ($i=0; $i < count($region_data); $i++) { 
+                        $content_region = new ContentRegion();
+                        $content_region->content_id = $content->content_id;
+                        $content_region->region_id = trim($region_data[$i]);
+                        $content_region->save();
+                    }
+        
+                    if ($request->commune_id != 'null') {
+                        $commune_data = explode(',', $request->commune_id);
+        
+                        for ($i=0; $i < count($commune_data); $i++) { 
+                            $content_commune = new ContentCommune();
+                            $content_commune->content_id = $content->content_id;
+                            $content_commune->commune_id = trim($commune_data[$i]);
+                            $content_commune->save();
+                        }
+                    } else {
+                        $region_data = explode(',', $request->region_id);
+        
+                        for ($i=0; $i < count($region_data); $i++) { 
+                            $communes = Commune::where('region_id', trim($region_data[$i]))->get();
+        
+                            foreach ($communes as $commune) {
+                                $content_commune = new ContentCommune();
+                                $content_commune->content_id = $content->content_id;
+                                $content_commune->commune_id = $commune->commune_id;
+                                $content_commune->save();
+                            }
+                        }
+                    }
+                } else {
+                    $regions = Region::all();
+    
+                    foreach ($regions as $region) {
+                        $content_region = new ContentRegion();
+                        $content_region->content_id = $content->content_id;
+                        $content_region->region_id = $region->region_id;
+                        $content_region->save();
+                    }
+    
+                    $communes = Commune::all();
+    
+                    foreach ($communes as $commune) {
+                        $content_commune = new ContentCommune();
+                        $content_commune->content_id = $content->content_id;
+                        $content_commune->commune_id = $commune->commune_id;
+                        $content_commune->save();
+                    }
+                }
+            }
         }
 
         return $this->successResponse($content);
@@ -295,8 +421,42 @@ class ContentController extends ApiResponseController
      */
     public function show(Request $request)
     {
-        $id = $request->segment(4);
-        $contents = Content::where('category_id', $id)->where('status', 1)->orderBy('position', 'ASC')->get();
+        $content_qty = Content::select('contents.*')
+            ->distinct() // Agrega la función distinct()
+            ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
+            ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
+            ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
+            ->where('contents.status', 1)
+            ->where('contents.category_id', $request->category_id)
+            ->where('content_regions.region_id', $request->region)
+            ->where('content_communes.commune_id', $request->commune)
+            ->orderBy('contents.position', 'ASC')
+            ->count();
+
+        if($content_qty > 0) {
+            $contents = Content::select('contents.*')
+                ->distinct() // Agrega la función distinct()
+                ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
+                ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
+                ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
+                ->where('contents.status', 1)
+                ->where('contents.category_id', $request->category_id)
+                ->where('content_regions.region_id', $request->region)
+                ->where('content_communes.commune_id', $request->commune)
+                ->orderBy('contents.position', 'ASC')
+                ->get();
+        } else {
+            $contents = Content::select('contents.*')
+                ->distinct() // Agrega la función distinct()
+                ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
+                ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
+                ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
+                ->where('contents.georeferencing_type_id', 2)
+                ->where('contents.status', 1)
+                ->where('contents.category_id', $request->category_id)
+                ->orderBy('contents.position', 'ASC')
+                ->get();
+        }
 
         return $this->successResponse($contents);
     }

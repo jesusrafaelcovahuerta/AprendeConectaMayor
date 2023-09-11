@@ -3,12 +3,19 @@
         <!-- Begin Page Content -->
         <div class="container-fluid">
             <h1 class="h3 mb-2 text-gray-800">
-                Perfil
+                Crear Rol
             </h1>
             <!-- DataTales Example -->
             <div class="card shadow mb-4">
                 <div class="card-header py-3">
-                    <h6 class="m-0 font-weight-bold text-primary">Información</h6>
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <h6 class="m-0 font-weight-bold text-primary">Información</h6>
+                        </div>
+                        <div class="col-sm-6">
+                            <h6 class="m-0 text-danger float-right">* Campos Obligatorios</h6>
+                        </div>
+                    </div>
                 </div>
                 <div class="card-body">
                     <div class="table-responsive">
@@ -27,53 +34,34 @@
                                 </div>
                                 <div class="form-group row">
                                     <div class="col-sm-6">
-                                        <label for="exampleInputEmail1">Correo</label>
+                                        <label for="exampleInputEmail1">Nombre del Rol <h6 class="m-0 text-danger float-right">*</h6></label>
                                         <input
                                         type="text" 
-                                        v-model="form.email" 
+                                        v-model="form.rol" 
+                                        maxlength="36"
                                         class="form-control"
-                                        placeholder="Ingresa el correo"
+                                        placeholder="Ingresa el rol"
                                         >
                                     </div>
                                     <div class="col-sm-6">
-                                        <label for="exampleInputEmail1">Teléfono</label>
-                                        <input
-                                        type="number" 
-                                        v-model="form.phone" 
-                                        class="form-control"
-                                        placeholder="Ingresa el teléfono"
+                                        <label for="exampleInputEmail1">Permisos <h6 class="m-0 text-danger float-right">*</h6></label>
+                                        <select class="form-control" id="exampleFormControlSelect1"
+                                        v-model="form.permission_id" multiple
                                         >
+                                            <option v-for="permission_post in permission_posts" :key="permission_post.permission_id" :value="permission_post.permission_id">{{ permission_post.permission }}</option>
+                                        </select>
                                     </div>
                                 </div>
-                                <div class="form-group row">
-                                    <div class="col-sm-6">
-                                        <label for="exampleInputEmail1">Contraseña</label>
-                                        <input
-                                        type="password" 
-                                        v-model="form.password" 
-                                        class="form-control"
-                                        placeholder="Ingresa la contraseña"
-                                        >
-                                    </div>
-                                    <div class="col-sm-6">
-                                        <label for="exampleInputEmail1">Repetir la contraseña</label>
-                                        <input
-                                        type="password" 
-                                        v-model="form.repassword" 
-                                        class="form-control"
-                                        placeholder="Ingresa nuevamente la contraseña"
-                                        >
-                                    </div>
-                                </div>
+                               
                                 <button 
                                 type="submit"
                                 class="btn btn-success btn-icon-split">
                                     <span class="icon text-white-50">
                                         <i class="fas fa-check"></i>
                                     </span>
-                                    <span class="text">Actualizar</span>
+                                    <span class="text">Guardar</span>
                                 </button>
-                                <router-link to="/account" class="btn btn-danger btn-icon-split">
+                                <router-link to="/rol" class="btn btn-danger btn-icon-split">
                                     <span class="icon text-white-50">
                                         <i class="fas fa-times"></i>
                                     </span>
@@ -91,31 +79,33 @@
 
 <script>
     import { ClipLoader } from 'vue-spinner/dist/vue-spinner.min.js';
+    import InputColorPicker from 'vue-native-color-picker';
+
     export default {
         components: {
-            ClipLoader
+            ClipLoader,
+            "v-input-colorpicker": InputColorPicker
         },
         created() {
             this.storeAudit();
+            this.getPosts();
         },
         data: function() {
             return {
                 errors: [],
-                color: '#0A2787',
+                permission_posts: [],
                 loading: false,
-                alliance_posts: [],
+                noFile: false,
                 form: {
-                    email: '',
-                    phone: '',
-                    password: '',
-                    repassword: ''
+                    rol: '',
+                    permission_id: null,
                 }
             }
         },
         methods: {
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Editar Perfil - Id del Perfil: '+this.$route.params.id);
+                formData.append('page', 'Crear Rol');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -125,28 +115,35 @@
                     console.log(error);
                 });
             },
-            onSubmit(e) {
+            getPosts() {
                 this.loading = true;
+
+                axios.get('/api/permission?api_token='+App.apiToken)
+                .then(response => {
+                    this.permission_posts = response.data.data;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                })
+                .finally(() => {
+                    this.loading = false;
+                });
+            },
+            onSubmit(e) {
+                this.loading = true; //the loading begin
                 e.preventDefault();
                 let currentObj = this;
-
+    
                 const config = {
                     headers: { 'content-type': 'multipart/form-data' }
                 }
 
-                if(this.form.rut != ''
-                    && this.form.email != ''
-                    && this.form.phone != ''
-                    && this.form.password != ''
-                    && this.form.repassword != ''
-                    && this.form.password == this.form.repassword
-                ) {
+                if(this.form.rol != '' && this.form.permission_id != null) {
                     let formData = new FormData();
-                    formData.append('email', this.form.email);
-                    formData.append('phone', this.form.phone);
-                    formData.append('password', this.form.password);
+                    formData.append('rol', this.form.rol);
+                    formData.append('permissions', this.form.permission_id);
 
-                    axios.post('/api/user/update/?api_token='+App.apiToken, formData, config)
+                    axios.post('/api/rol/store?api_token='+App.apiToken, formData, config)
                     .then(function (response) {
                         currentObj.success = response.data.success;
                     })
@@ -155,7 +152,7 @@
                     })
                     .finally(() => {
                         let formData = new FormData();
-                        formData.append('page', 'Perfil Actualizado - Id del Perfil: '+this.$route.params.id);
+                        formData.append('page', 'Rol Creado');
                     
                         axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                         .then(function (response) {
@@ -166,37 +163,27 @@
                         });
 
                         this.loading = false;
-                        this.$awn.success("El registro ha sido actualizado", {labels: {success: "Éxito"}});
-                        this.$router.push('/account');
+                        this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
+                        this.$router.push('/rol');
                     });
                 } else {
                     this.loading = false;
                     this.errors = [];
                     
-                    if (this.form.email == '' || this.form.email == null) {
-                        this.errors.push('El correo es obligatorio.');
-                    }
-                    if (this.form.phone == null) {
-                        this.errors.push('El teléfono es obligatorio.');
-                    }
-                    if (this.form.password == '' || this.form.repassword == '') {
-                        this.errors.push('La contraseña es obligatoria.');
-                    }
-                    if (this.form.password != this.form.repassword) {
-                        this.errors.push('Las contraseñas deben coincidir.');
+                    if (this.form.rol == '') {
+                        this.errors.push('El nombre del rol es obligatorio.');
                     }
 
-                    $('html,body').scrollTop(0);
+                    if (this.form.permission_id == null) {
+                        this.errors.push('El permiso es obligatorio.');
+                    }
+
+                    window.scrollTo(0, 0);
 
                     e.preventDefault();
                 }
             },
 
-        },
-        computed: {
-            isDisabled() {
-                return true;
-            }
         }
     }
 </script>

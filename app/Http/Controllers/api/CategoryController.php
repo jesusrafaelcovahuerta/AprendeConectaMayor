@@ -273,7 +273,13 @@ class CategoryController extends ApiResponseController
         $category->title = $request->title;
         $category->color = $request->color;
         $category->subtitle = $request->subtitle;
-        $category->iframe = $request->iframe;
+
+        if($request->iframe_question_id == 1) {
+            $category->iframe = $request->iframe;
+        } else {
+            $category->iframe = '';
+        }
+
         $category->google_tag = 'category_' . $request->google_tag;
         $old_position = $category->position;
         $category->position = $request->position;
@@ -392,7 +398,7 @@ class CategoryController extends ApiResponseController
      */
     public function show(Request $request)
     {
-        $categort_qty = Category::select('categories.*')
+        $category_qty = Category::select('categories.*')
             ->distinct() // Agrega la función distinct()
             ->leftJoin('category_regions', 'category_regions.category_id', '=', 'categories.category_id')
             ->leftJoin('communes', 'communes.region_id', '=', 'category_regions.region_id')
@@ -404,7 +410,7 @@ class CategoryController extends ApiResponseController
             ->orderBy('categories.position', 'ASC')
             ->count();
 
-        if($categort_qty > 0) {
+        if($category_qty > 0) {
             $categories = Category::select('categories.*')
                 ->distinct() // Agrega la función distinct()
                 ->leftJoin('category_regions', 'category_regions.category_id', '=', 'categories.category_id')

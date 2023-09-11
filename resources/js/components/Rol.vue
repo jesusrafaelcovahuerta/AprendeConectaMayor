@@ -3,8 +3,8 @@
         <!-- Begin Page Content -->
         <div class="container-fluid">
             <h1 class="h3 mb-2 text-gray-800">
-                Usuarios 
-                <router-link to="/user/create" class="btn btn-success btn-icon-split">
+                Rol 
+                <router-link to="/rol/create" class="btn btn-success btn-icon-split">
                     <span class="icon text-white-50">
                       <i class="fas fa-check"></i>
                     </span>
@@ -26,54 +26,26 @@
                             </center>
                         </div>
                         <div v-else>
-                            <div v-if="rowsQuantity > 0 && rols_permissions[25]">
+                            <div v-if="rowsQuantity > 0 && rols_permissions[29]">
                                 <table v-if="total > 0" class="table table-bordered" id="dataTable" width="100%" cellspacing="0">
                                     <thead>
                                         <tr>
-                                            <th>Rut</th>
-                                            <th>Nombre</th>
-                                            <th>Apellido</th>
+                                            <th>Id</th>
                                             <th>Rol</th>
-                                            <th>Alianza</th>
-                                            <th>Correo</th>
                                             <th></th>
                                         </tr>
                                     </thead>
                                     <tbody>
                                         <tr v-for="(post, index) in posts" v-bind:index="index">
-                                            <td>{{ post.rut }}</td>
-                                            <td>{{ post.name }}</td>
-                                            <td>{{ post.lastname }}</td>
+                                            <td>{{ post.rol_id }}</td>
+                                            <td>{{ post.rol }}</td>
+                                          
                                             <td>
-                                                <span class="badge badge-danger" v-if="post.status == 0">
-                                                    {{ post.rol }}
-                                                </span>
-                                                <span class="badge badge-warning" v-if="post.status == 1">
-                                                    {{ post.rol }}
-                                                </span>
-                                                <span class="badge badge-info" v-if="post.status == 2">
-                                                    {{ post.rol }}
-                                                </span>
-                                            </td>
-                                            <td>{{ post.alliance }}</td>
-                                            <td>{{ post.email }}</td>
-                                            <td>
-                                                <span class="badge badge-danger" v-if="post.status == 0">
-                                                    Desactivado
-                                                </span>
-                                                <span class="badge badge-success" v-if="post.status == 1">
-                                                    Activado
-                                                </span>
-                                            </td>
-                                            <td>
-                                                <router-link v-if="rols_permissions[27]" :to="`/user/edit/${post.rut}`" v-if="post.rol_id != 1 || rut == post.rut || rol_id == 3"  class="btn btn-primary btn-circle btn-sm">
+                                                <router-link :to="`/rol/edit/${post.rol_id}`" v-if="rols_permissions[30]"  class="btn btn-primary btn-circle btn-sm">
                                                     <i class="fas fa-edit"></i>
                                                 </router-link>
-                                                <button v-if="post.status == 1 && rol_id == 3 && rols_permissions[28]" v-on:click="deletePost(post.rut, index)" class="btn btn-danger btn-circle btn-sm">
+                                                <button v-if="rols_permissions[31]" v-on:click="deletePost(post.rol_id, index)" class="btn btn-danger btn-circle btn-sm">
                                                     <i class="fas fa-trash"></i>
-                                                </button>
-                                                <button v-if="post.status == 0 && rols_permissions[39]" v-on:click="activatePost(post.rut, index)" class="btn btn-success btn-circle btn-sm">
-                                                    <i class="fas fa-check"></i>
                                                 </button>
                                             </td>
                                         </tr>
@@ -126,7 +98,6 @@
         created() {
             this.getRols();
             this.getPosts();
-            this.getRol();
             this.storeAudit();
             this.getUser();
         },
@@ -144,7 +115,7 @@
             },
             storeAudit() {
                 let formData = new FormData();
-                formData.append('page', 'Usuarios');
+                formData.append('page', 'Roles');
                
                 axios.post('/api/audit/store?api_token='+App.apiToken, formData)
                 .then(function (response) {
@@ -157,7 +128,7 @@
             getPosts() {
                 this.loading = true;
 
-                axios.get('/api/user?page='+this.currentPage+'&api_token='+App.apiToken)
+                axios.get('/api/rol?page='+this.currentPage+'&api_token='+App.apiToken)
                 .then(response => {
                     this.posts = response.data.data.data;
                     this.total = response.data.data.last_page;
@@ -193,7 +164,7 @@
             deletePost(id, index) {
                 if(confirm("¿Realmente usted quiere desactivar el registro?")) {
                     this.loading = true; //the loading begin
-                    axios.get('/api/user/destroy/'+id+'?api_token='+App.apiToken).then(response => {
+                    axios.get('/api/rol/destroy/'+id+'?api_token='+App.apiToken).then(response => {
                         this.posts.splice(index, 1);
                     })
                     .catch(function (error) {
@@ -202,7 +173,7 @@
                     .finally(() => {
                         this.loading = false;
                         this.getPosts();
-                        this.$awn.success("El registro ha sido desactivado", {labels: {success: "Éxito"}});
+                        this.$awn.success("El registro ha sido borrado", {labels: {success: "Éxito"}});
                     });
 
                     let formData = new FormData();
@@ -214,22 +185,6 @@
                     })
                     .catch(function (error) {
                         console.log(error);
-                    });
-                }
-            },
-            activatePost(id, index) {
-                if(confirm("¿Realmente usted quiere activar el registro?")) {
-                    this.loading = true; //the loading begin
-                    axios.get('/api/user/activate/'+id+'?api_token='+App.apiToken).then(response => {
-                        this.posts.splice(index, 1);
-                    })
-                    .catch(function (error) {
-                        console.log(error);
-                    })
-                    .finally(() => {
-                        this.loading = false;
-                        this.getPosts();
-                        this.$awn.success("El registro ha sido activado", {labels: {success: "Éxito"}});
                     });
                 }
             }

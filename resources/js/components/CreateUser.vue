@@ -10,7 +10,7 @@
                 <div class="card-header py-3">
                     <h6 class="m-0 font-weight-bold text-primary">Información</h6>
                 </div>
-                <div class="card-body">
+                <div class="card-body" v-if="rols_permissions[26]">
                     <div class="table-responsive">
                         <div v-if="loading">
                             <center>
@@ -169,11 +169,14 @@
             ClipLoader
         },
         created() {
+            this.getRols();
+            this.storeAudit();
             this.getAlliaceList();
             this.getRol();
         },
         data: function() {
             return {
+                rols_permissions: {},
                 errors: [],
                 color: '#0A2787',
                 loading: false,
@@ -194,6 +197,29 @@
             }
         },
         methods: {
+            getRols() {
+                axios.get('/api/user/rol?api_token=' + App.apiToken)
+                    .then(response => {
+                        this.rols_permissions = {}; // Initialize as an object
+
+                        response.data.data.forEach(item => {
+                            this.rols_permissions[item.permission_id] = true; // Set as true
+                        });
+
+                    });
+            },
+            storeAudit() {
+                let formData = new FormData();
+                formData.append('page', 'Crear Usuario');
+               
+                axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                .then(function (response) {
+                    currentObj.success = response.data.success;
+                })
+                .catch(function (error) {
+                    console.log(error);
+                });
+            },
             getRol() {
                 axios.get('/api/user/rol?api_token='+App.apiToken)
                 .then(response => {
@@ -249,6 +275,17 @@
                         console.log(error);
                     })
                     .finally(() => {
+                        let formData = new FormData();
+                        formData.append('page', 'Usuario Creado');
+                    
+                        axios.post('/api/audit/store?api_token='+App.apiToken, formData)
+                        .then(function (response) {
+                            currentObj.success = response.data.success;
+                        })
+                        .catch(function (error) {
+                            console.log(error);
+                        });
+
                         this.loading = false;
                         this.$awn.success("El registro ha sido agregado", {labels: {success: "Éxito"}});
                         this.$router.push('/user');
