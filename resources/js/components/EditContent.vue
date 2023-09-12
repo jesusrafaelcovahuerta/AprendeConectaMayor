@@ -180,7 +180,7 @@
                                         <input type="hidden" v-model="form.icon_type_id">
                                     </div>
                                     <div class="col-sm-4" v-if="form.icon_available_id == 1">
-                                        <label for="exampleInputEmail1">Fa Icon - <a href="https://fontawesome.com/icons" target= "_blank">Ver iconos</a></label>
+                                        <label for="exampleInputEmail1">Fa Icon - <a href="h7ttps://fontawesome.com/icons" target= "_blank">Ver iconos</a></label>
                                         <input
                                             type="text" 
                                             v-model="form.fai" 
@@ -478,6 +478,10 @@
                         var icon = this.post.icon.split(' ');
 
                         icon = icon[1] +' '+ icon[2];
+
+                        this.$set(this.form, 'icon_available_id', 1);
+                    } else {
+                        this.$set(this.form, 'icon_available_id', 2);
                     }
 
                     this.$set(this.form, 'fai', icon);
@@ -487,6 +491,7 @@
                     this.$set(this.form, 'end_date', this.post.end_date);
                     this.$set(this.form, 'position', this.post.position);
                     this.$set(this.form, 'src', this.post.src);
+                    this.$set(this.form, 'iframe', this.post.iframe);
                     
                     if (this.post.video_type_id == '') {
                         this.$set(this.form, 'video_type_id', null);
