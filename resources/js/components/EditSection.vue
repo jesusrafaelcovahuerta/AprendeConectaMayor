@@ -454,9 +454,7 @@
                         this.$set(this.form, 'youtube_question_id', 2);
                     }
 
-                    var google_tag = this.post.google_tag.split('_');
-
-                    this.$set(this.form, 'google_tag', google_tag[1]);
+                    this.$set(this.form, 'google_tag', this.post.google_tag);
                     this.$set(this.form, 'subtitle', this.post.section_subtitle);
                     this.$set(this.form, 'iframe', this.post.iframe);
 

@@ -285,7 +285,7 @@ class ContentController extends ApiResponseController
         $content->type_id = $request->type_id;
         $content->video_id = $request->video_id;
         $content->title = $request->title;
-        $content->google_tag = 'content_' . $request->google_tag;
+        $content->google_tag = $request->google_tag;
         $content->start_date = $request->start_date;
         $content->icon_type_id = $request->icon_type_id;
         $content->icon = 'icon '. $fileName.' home_icon_size2';

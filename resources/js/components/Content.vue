@@ -117,7 +117,7 @@
                                                 <button v-if="post.status == 1 && rols_permissions[37]" v-on:click="stopPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
                                                     <i class="fas fa-pause"></i>
                                                 </button>
-                                                <button v-if="post.status == 2 && rols_permissions[38]" v-on:click="playPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
+                                                <button v-if="(post.status == 0 || post.status == 2) && rols_permissions[38]" v-on:click="playPost(post.content_id, index)" class="btn btn-warning btn-circle btn-sm">
                                                     <i class="fas fa-play"></i>
                                                 </button>
                                                 <button v-if="post.status == 1 && rols_permissions[18]" v-on:click="deletePost(post.content_id, index)" class="btn btn-danger btn-circle btn-sm">

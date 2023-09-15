@@ -469,9 +469,7 @@
                     this.$set(this.form, 'video_id', this.post.video_id);
                     this.$set(this.form, 'title', this.post.title);
 
-                    var google_tag = this.post.google_tag.split('_');
-
-                    this.$set(this.form, 'google_tag', google_tag[1]);
+                    this.$set(this.form, 'google_tag', this.post.google_tag);
                     this.$set(this.form, 'icon_type_id', this.post.icon_type_id);
               
                     if (this.post.icon != null) {

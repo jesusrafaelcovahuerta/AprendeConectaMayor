@@ -280,7 +280,7 @@ class CategoryController extends ApiResponseController
             $category->iframe = '';
         }
 
-        $category->google_tag = 'category_' . $request->google_tag;
+        $category->google_tag = $request->google_tag;
         $old_position = $category->position;
         $category->position = $request->position;
         $category->georeferencing_type_id = $request->georeferencing_type_id;

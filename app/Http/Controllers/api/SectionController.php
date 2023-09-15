@@ -347,7 +347,7 @@ class SectionController extends ApiResponseController
         $old_icon_type = $section->icon_type_id;
         $old_icon_name = $section->icon;
         $section->icon_type_id = $request->icon_type_id;
-        $section->google_tag = 'section_' . $request->google_tag;
+        $section->google_tag = $request->google_tag;
         $section->link_question_id = $request->link_question_id;
         $section->direct_content_question_id = $request->direct_content_question_id;
         $section->url = $request->url;

@@ -412,9 +412,7 @@
                     this.$set(this.form, 'fai', icon);
                     this.$set(this.form, 'highlight_id', this.post.highlight_id);
 
-                    var google_tag = this.post.google_tag.split('_');
-
-                    this.$set(this.form, 'google_tag', google_tag[1]);
+                    this.$set(this.form, 'google_tag', this.post.google_tag);
                     this.$set(this.form, 'region_id', this.post.region_id);
                     this.$set(this.form, 'commune_id', this.post.commune_id);
 
