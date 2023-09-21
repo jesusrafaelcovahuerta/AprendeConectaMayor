@@ -10,6 +10,9 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
 use App\ContentRegion;
 use App\ContentCommune;
+use App\Region;
+use App\Commune;
+use Illuminate\Support\Facades\DB;
 
 class ContentController extends ApiResponseController
 {
@@ -421,42 +424,29 @@ class ContentController extends ApiResponseController
      */
     public function show(Request $request)
     {
-        $content_qty = Content::select('contents.*')
-            ->distinct() // Agrega la función distinct()
-            ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
-            ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
-            ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
-            ->where('contents.status', 1)
-            ->where('contents.category_id', $request->category_id)
-            ->where('content_regions.region_id', $request->region)
-            ->where('content_communes.commune_id', $request->commune)
-            ->orderBy('contents.position', 'ASC')
-            ->count();
-
-        if($content_qty > 0) {
-            $contents = Content::select('contents.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
-                ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
-                ->where('contents.status', 1)
-                ->where('contents.category_id', $request->category_id)
-                ->where('content_regions.region_id', $request->region)
-                ->where('content_communes.commune_id', $request->commune)
-                ->orderBy('contents.position', 'ASC')
-                ->get();
-        } else {
-            $contents = Content::select('contents.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('content_regions', 'content_regions.content_id', '=', 'contents.content_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'content_regions.region_id')
-                ->leftJoin('content_communes', 'content_communes.commune_id', '=', 'communes.commune_id')
-                ->where('contents.georeferencing_type_id', 2)
-                ->where('contents.status', 1)
-                ->where('contents.category_id', $request->category_id)
-                ->orderBy('contents.position', 'ASC')
-                ->get();
-        }
+        $contents = Content::select('contents.*')
+        ->where(function ($query) use ($request) {
+            $query->where('georeferencing_type_id', 2)
+                ->orWhere(function ($query) use ($request) {
+                    $query->where('georeferencing_type_id', 1)
+                            ->whereExists(function ($subquery) use ($request) {
+                                $subquery->select(DB::raw(1))
+                                        ->from('content_regions')
+                                        ->whereColumn('content_regions.content_id', 'contents.content_id')
+                                        ->where('content_regions.region_id', $request->region)
+                                        ->whereExists(function ($subsubquery) use ($request) {
+                                            $subsubquery->select(DB::raw(1))
+                                                        ->from('content_communes')
+                                                        ->whereColumn('content_communes.content_id', 'contents.content_id')
+                                                        ->where('content_communes.commune_id', $request->commune);
+                                        });
+                            });
+                });
+        })
+        ->where('contents.category_id', $request->category_id)
+        ->where('contents.status', 1)
+        ->orderBy('contents.position', 'ASC')
+        ->get();
 
         return $this->successResponse($contents);
     }

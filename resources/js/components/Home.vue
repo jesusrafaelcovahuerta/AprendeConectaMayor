@@ -201,14 +201,16 @@
             },
             async getPosts() {
                 try {
-                    await this.getRegion(); // Espera a que se complete getRegion()
+                    await this.getRegion();
+                    await this.getCommune();
 
                     this.loading = true;
 
                     let formData = new FormData();
                     formData.append('region', this.region);
                     formData.append('commune', this.commune);
-
+                    console.log(this.region);
+                    console.log(this.commune);
                     if (this.region == null && this.commune == null) {
                         this.posts = '';
                     } else {

@@ -14,6 +14,7 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller\api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class SectionController extends ApiResponseController
 {
@@ -46,41 +47,29 @@ class SectionController extends ApiResponseController
      */
     public function home(Request $request)
     {
-        $section_qty = Section::select('sections.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('section_regions', 'section_regions.section_id', '=', 'sections.section_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'section_regions.region_id')
-                ->leftJoin('section_communes', 'section_communes.commune_id', '=', 'communes.commune_id')
-                ->where('sections.status', 1)
-                ->where('section_regions.region_id', $request->region)
-                ->where('section_communes.commune_id', $request->commune)
-                ->orderBy('sections.position', 'ASC')
-                ->count();
-
-        if ($section_qty > 0) {
-            $sections = Section::select('sections.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('section_regions', 'section_regions.section_id', '=', 'sections.section_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'section_regions.region_id')
-                ->leftJoin('section_communes', 'section_communes.commune_id', '=', 'communes.commune_id')
-                ->where('sections.status', 1)
-                ->where('section_regions.region_id', $request->region)
-                ->where('section_communes.commune_id', $request->commune)
-                ->orderBy('sections.position', 'ASC')
-                ->get();
-
-        } else {
-            $sections = Section::select('sections.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('section_regions', 'section_regions.section_id', '=', 'sections.section_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'section_regions.region_id')
-                ->leftJoin('section_communes', 'section_communes.commune_id', '=', 'communes.commune_id')
-                ->where('sections.georeferencing_type_id', 2)
+        $sections = Section::select('sections.*')
+                ->where(function ($query) use ($request) {
+                    $query->where('georeferencing_type_id', 2)
+                        ->orWhere(function ($query) use ($request) {
+                            $query->where('georeferencing_type_id', 1)
+                                    ->whereExists(function ($subquery) use ($request) {
+                                        $subquery->select(DB::raw(1))
+                                                ->from('section_regions')
+                                                ->whereColumn('section_regions.section_id', 'sections.section_id')
+                                                ->where('section_regions.region_id', $request->region)
+                                                ->whereExists(function ($subsubquery) use ($request) {
+                                                    $subsubquery->select(DB::raw(1))
+                                                                ->from('section_communes')
+                                                                ->whereColumn('section_communes.section_id', 'sections.section_id')
+                                                                ->where('section_communes.commune_id', $request->commune);
+                                                });
+                                    });
+                        });
+                })
                 ->where('sections.status', 1)
                 ->orderBy('sections.position', 'ASC')
                 ->get();
-        }
-        
+
         return $this->successResponse($sections);
     }
 

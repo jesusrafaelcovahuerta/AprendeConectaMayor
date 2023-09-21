@@ -14,6 +14,7 @@ use App\Http\Controllers\ApiResponseController;
 use App\Http\Controllers\Controller\api;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class CategoryController extends ApiResponseController
 {
@@ -398,42 +399,29 @@ class CategoryController extends ApiResponseController
      */
     public function show(Request $request)
     {
-        $category_qty = Category::select('categories.*')
-            ->distinct() // Agrega la función distinct()
-            ->leftJoin('category_regions', 'category_regions.category_id', '=', 'categories.category_id')
-            ->leftJoin('communes', 'communes.region_id', '=', 'category_regions.region_id')
-            ->leftJoin('category_communes', 'category_communes.commune_id', '=', 'communes.commune_id')
-            ->where('categories.status', 1)
-            ->where('categories.section_id', $request->section_id)
-            ->where('category_regions.region_id', $request->region)
-            ->where('category_communes.commune_id', $request->commune)
-            ->orderBy('categories.position', 'ASC')
-            ->count();
-
-        if($category_qty > 0) {
-            $categories = Category::select('categories.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('category_regions', 'category_regions.category_id', '=', 'categories.category_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'category_regions.region_id')
-                ->leftJoin('category_communes', 'category_communes.commune_id', '=', 'communes.commune_id')
-                ->where('categories.status', 1)
-                ->where('categories.section_id', $request->section_id)
-                ->where('category_regions.region_id', $request->region)
-                ->where('category_communes.commune_id', $request->commune)
-                ->orderBy('categories.position', 'ASC')
-                ->get();
-        } else {
-            $categories = Category::select('categories.*')
-                ->distinct() // Agrega la función distinct()
-                ->leftJoin('category_regions', 'category_regions.category_id', '=', 'categories.category_id')
-                ->leftJoin('communes', 'communes.region_id', '=', 'category_regions.region_id')
-                ->leftJoin('category_communes', 'category_communes.commune_id', '=', 'communes.commune_id')
-                ->where('categories.georeferencing_type_id', 2)
-                ->where('categories.status', 1)
-                ->where('categories.section_id', $request->section_id)
-                ->orderBy('categories.position', 'ASC')
-                ->get();
-        }
+        $categories = Category::select('categories.*')
+        ->where(function ($query) use ($request) {
+            $query->where('georeferencing_type_id', 2)
+                ->orWhere(function ($query) use ($request) {
+                    $query->where('georeferencing_type_id', 1)
+                            ->whereExists(function ($subquery) use ($request) {
+                                $subquery->select(DB::raw(1))
+                                        ->from('category_regions')
+                                        ->whereColumn('category_regions.category_id', 'categories.category_id')
+                                        ->where('category_regions.region_id', $request->region)
+                                        ->whereExists(function ($subsubquery) use ($request) {
+                                            $subsubquery->select(DB::raw(1))
+                                                        ->from('category_communes')
+                                                        ->whereColumn('category_communes.category_id', 'categories.category_id')
+                                                        ->where('category_communes.commune_id', $request->commune);
+                                        });
+                            });
+                });
+        })
+        ->where('categories.section_id', $request->section_id)
+        ->where('categories.status', 1)
+        ->orderBy('categories.position', 'ASC')
+        ->get();
 
         return $this->successResponse($categories);
     }
