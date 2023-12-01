@@ -104,9 +104,7 @@
         },
         methods: {
             detectDispositive() {
-                const userAgent = window.navigator.userAgent.toLowerCase();
-                
-                if (/mobile|android|iphone|ipod|blackberry|iemobile|opera mini/i.test(userAgent)) {
+                if (screen.width <= 760) {
                     this.dispositive = "phone";
                 } else {
                     this.dispositive = "desktop";
